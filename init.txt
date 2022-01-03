@@ -1,0 +1,5 @@
+# run these commands to set up your workspace
+npm install -g typescript
+npm install -g ts-node
+npm install node-opcua-client --save
+npm install node-opcua --save
