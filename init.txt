@@ -3,3 +3,6 @@ npm install -g typescript
 npm install -g ts-node
 npm install node-opcua-client --save
 npm install node-opcua --save
+npm install ioredis
+npm install xmldom
+npm install xpath-ts
