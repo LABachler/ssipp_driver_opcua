@@ -1,13 +1,10 @@
-const MyRedisConnector = require("../Redis/RedisConnector")
-const MyDOMParser = require ("xmldom");
-const MyXPath = require("xpath-ts");
+import { RedisConnector} from "../Redis/RedisConnector";
+import { DOMParserImpl as dom } from "xmldom-ts";
 
-
-class XMLHandler {
+export class XMLHandler {
     readonly processId: number;
-    private _redisConnector;
-    private _doc;
-    private _xPath;
+    private _redisConnector: RedisConnector;
+    private _doc: Document;
     private _running: boolean;
 
     get running(): boolean {
@@ -19,15 +16,32 @@ class XMLHandler {
             this.processId = 0; //0 is DemoData
         else
             this.processId = parseInt(process.argv[2]);
-        this._redisConnector = new MyRedisConnector.RedisConnector();
-        this.renewDocFromRedis();
-        this._xPath = require("xpath-ts"); //TODO
+        this._redisConnector = new RedisConnector();
+        this.renewRedisString();
         this._running = true;
     }
 
-    renewDocFromRedis() {
+    renewRedisString() {
         this._redisConnector.renewRedisString(this.processId);
     }
-}
 
-export {XMLHandler}
+    renewDocFromRedisString() {
+        this._doc = new dom().parseFromString(this._redisConnector.redisString);
+    }
+
+    private processDoc() {
+    }
+
+    public async run() {
+        while (this._running) {
+            this.renewRedisString();
+            setTimeout( () => {
+                if (this._redisConnector.xmlStringChanged) {
+                    this.renewDocFromRedisString();
+                    this.processDoc();
+                    this._redisConnector.xmlStringChangeProcessed();
+                }
+            }, 5000);
+        }
+    }
+}

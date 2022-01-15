@@ -1,16 +1,20 @@
 import { Tedis, TedisPool } from "tedis";
 
-class RedisConnector{
+export class RedisConnector{
     static PORT = 6379;
     static HOST = "127.0.0.1";
 
     private _redisString: string;
-    private _conn;
+    private _conn: Tedis;
+    private _xmlStringChanged: boolean;
 
     constructor() {
         this._conn = new Tedis({
             port: RedisConnector.PORT,
             host: RedisConnector.HOST
+        });
+        this._conn.on("connect", function(){
+            console.log("Redis connected!");
         });
     }
 
@@ -18,12 +22,22 @@ class RedisConnector{
         return this._redisString;
     }
 
+    get xmlStringChanged(): boolean {
+        return this._xmlStringChanged;
+    }
+
+    xmlStringChangeProcessed() {
+        this._xmlStringChanged = false;
+    }
+
     renewRedisString = (processId: number) => {
-        this._redisString = this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
-            console.log(result);
-            return result;
-        });
+        this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
+            if (result !== this.redisString){
+                console.log("New String from Redis: ");
+                console.log(result);
+                this._redisString = result;
+                this._xmlStringChanged = true;
+            }
+        }.bind(this));
     }
 }
-
-export { RedisConnector }

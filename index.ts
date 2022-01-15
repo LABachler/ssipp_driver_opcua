@@ -1,7 +1,8 @@
+import { XMLHandler } from "./XML/XMLHandler";
 
 async function main() {
-    const XMLHandler = require("./XML/XMLHandler");
-    let xmlHandler = new XMLHandler.XMLHandler();
+    let xmlHandler = new XMLHandler();
+    xmlHandler.run();
 }
 
 main();
