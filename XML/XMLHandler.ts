@@ -5,7 +5,7 @@ const MyXPath = require("xpath-ts");
 
 class XMLHandler {
     readonly processId: number;
-    private _redisConnection;
+    private _redisConnector;
     private _doc;
     private _xPath;
     private _running: boolean;
@@ -19,14 +19,14 @@ class XMLHandler {
             this.processId = 0; //0 is DemoData
         else
             this.processId = parseInt(process.argv[2]);
-        this._redisConnection = MyRedisConnector.RedisConnector.getRedisClient();
+        this._redisConnector = new MyRedisConnector.RedisConnector();
         this.renewDocFromRedis();
         this._xPath = require("xpath-ts"); //TODO
         this._running = true;
     }
 
     renewDocFromRedis() {
-        MyRedisConnector.RedisConnector.renewRedisString(this.processId);
+        this._redisConnector.renewRedisString(this.processId);
     }
 }
 
