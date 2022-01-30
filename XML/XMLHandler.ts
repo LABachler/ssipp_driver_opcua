@@ -17,16 +17,22 @@ export class XMLHandler {
         else
             this.processId = parseInt(process.argv[2]);
         this._redisConnector = new RedisConnector();
-        this.renewRedisString();
         this._running = true;
     }
 
     renewRedisString() {
-        this._redisConnector.renewRedisString(this.processId);
+        console.log("renewRedisString called!");
+        return new Promise((resolve, reject) => {
+            this._redisConnector.renewRedisString(this.processId);
+        });
     }
 
     renewDocFromRedisString() {
+        console.log("renewDocFromRedisStringCalled!");
         this._doc = new dom().parseFromString(this._redisConnector.redisString);
+        /*return new Promise((resolve, reject) => {
+            this._doc = new dom().parseFromString(this._redisConnector.redisString)
+        });*/
     }
 
     private processDoc() {
