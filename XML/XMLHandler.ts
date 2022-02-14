@@ -1,14 +1,20 @@
 import { RedisConnector} from "../Redis/RedisConnector";
 import { DOMParserImpl as dom } from "xmldom-ts";
+import { SSiPP_Process } from "./SSiPP_Process";
 
 export class XMLHandler {
     readonly processId: number;
     private _redisConnector: RedisConnector;
-    private _doc: Document;
+    private _doc: XMLDocument;
     private _running: boolean;
+    private _process: SSiPP_Process;
 
     get running(): boolean {
         return this._running;
+    }
+
+    get redisConnector(): RedisConnector {
+        return this._redisConnector;
     }
 
     constructor() {
@@ -20,13 +26,6 @@ export class XMLHandler {
         this._running = true;
     }
 
-    renewRedisString() {
-        console.log("renewRedisString called!");
-        return new Promise((resolve, reject) => {
-            this._redisConnector.renewRedisString(this.processId);
-        });
-    }
-
     renewDocFromRedisString() {
         console.log("renewDocFromRedisStringCalled!");
         this._doc = new dom().parseFromString(this._redisConnector.redisString);
@@ -36,18 +35,15 @@ export class XMLHandler {
     }
 
     private processDoc() {
+        this._process = new SSiPP_Process(this._doc);
     }
 
-    public async run() {
-        while (this._running) {
-            this.renewRedisString();
-            setTimeout( () => {
-                if (this._redisConnector.xmlStringChanged) {
-                    this.renewDocFromRedisString();
-                    this.processDoc();
-                    this._redisConnector.xmlStringChangeProcessed();
-                }
-            }, 5000);
+    renewDoc = async (): Promise<any> => {
+        if (this._redisConnector.xmlStringChanged == true) {
+            await this.renewDocFromRedisString();
+            await this.processDoc();
+            this._redisConnector.xmlStringChanged = false;
         }
+        return;
     }
 }
