@@ -10,6 +10,7 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "node-opcua": "^2.64.1",
     "node-opcua-client": "^2.62.7",
     "redis": "^4.0.2",
     "tedis": "^0.1.12",

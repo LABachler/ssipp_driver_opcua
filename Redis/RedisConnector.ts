@@ -14,7 +14,7 @@ export class RedisConnector{
             host: RedisConnector.HOST
         });
         this._conn.on("connect", function(){
-            console.log("Redis connected!");
+            console.log("Redis Connector: Redis connected!");
         });
     }
 
@@ -33,12 +33,11 @@ export class RedisConnector{
     async renewRedisString (processId: number) {
         await this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
             if (result[0] !== this.redisString) {
-                console.log("New String from Redis: ");
-                console.log(result[0]);
+                console.log("Redis Connector: New String from Redis: ");
+                console.log("   " + result[0]);
                 this._redisString = result[0];
                 this._xmlStringChanged = true;
             }
         }.bind(this));
-        return;
     }
 }

@@ -1,11 +1,32 @@
+import {
+    AttributeIds,
+    ClientMonitoredItem,
+    ClientSession,
+    ClientSubscription,
+    TimestampsToReturn
+} from "node-opcua-client";
+import * as opcua from "node-opcua";
+import {DataValue, MonitoringParametersOptions, ReadValueIdOptions} from "node-opcua";
 
 export class SSiPP_Param {
     private readonly _name: string;
     private readonly _value: number;
 
-    constructor(e: Element){
+    constructor(e: Element, opcSession: ClientSession, dataBlockName: String){
         this._name = e.getAttribute("name");
         this._value = parseInt(e.innerHTML);
+        const nodeToWrite = {
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
+            attributeId: AttributeIds.Value,
+            indexRange: null,
+            value: {
+                value: {
+                    dataType: opcua.DataType.Double,
+                    value: this._value
+                }
+            }
+        }
+        opcSession.write(nodeToWrite);
     }
 
     get name(): string {
@@ -19,11 +40,46 @@ export class SSiPP_Param {
 
 export class SSiPP_Report {
     private readonly _name: string;
-    private _value: number;
+    private _value: DataValue;
+    private _subscription: ClientSubscription;
 
-    constructor(e: Element) {
+    constructor(e: Element, opcSession: ClientSession, dataBlockName: String) {
         this._name = e.getAttribute("name");
-        this._value = parseInt(e.innerHTML);
+        this._subscription = ClientSubscription.create(opcSession, {
+            requestedPublishingInterval: 1000,
+            requestedLifetimeCount: 100,
+            requestedMaxKeepAliveCount: 10,
+            maxNotificationsPerPublish: 100,
+            publishingEnabled: true,
+            priority: 10
+        }); //TODO understand options, right now its just 10 s monitor
+        this._subscription.on("started", function(){
+            console.log("Subscription for " + this._name + "started.");
+        }).on("keepalive", function () {
+            console.log("Subscription for " + this._name + "keepalive.");
+        }).on("terminated", function () {
+            console.error("Subscription for " + this._name + "terminated.");
+        });
+        const itemToMonitor: ReadValueIdOptions = {
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
+            attributeId: AttributeIds.Value
+        }
+        const parameters: MonitoringParametersOptions = {
+            samplingInterval: 100,
+            discardOldest: true,
+            queueSize: 10
+        };
+
+        const monitoredItem = ClientMonitoredItem.create(
+            this._subscription,
+            itemToMonitor,
+            parameters,
+            TimestampsToReturn.Both
+        );
+
+        monitoredItem.on("changed", (dataValue: DataValue) => {
+            this._value = dataValue;
+        });
     }
 
     get name(): string {
@@ -31,6 +87,6 @@ export class SSiPP_Report {
     }
 
     get value(): number {
-        return this._value;
+        return this._value.value;
     }
 }
