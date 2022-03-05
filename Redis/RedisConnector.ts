@@ -18,10 +18,6 @@ export class RedisConnector{
         });
     }
 
-    get conn(): Tedis {
-        return this._conn;
-    }
-
     get redisString(): string {
         return this._redisString;
     }
@@ -30,20 +26,16 @@ export class RedisConnector{
         return this._xmlStringChanged;
     }
 
-    set xmlStringChanged(value: boolean) {
-        this._xmlStringChanged = value;
-    }
-
     xmlStringChangeProcessed() {
         this._xmlStringChanged = false;
     }
 
     async renewRedisString (processId: number) {
         await this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
-            if (result !== this.redisString){
+            if (result[0] !== this.redisString) {
                 console.log("New String from Redis: ");
-                console.log(result);
-                this._redisString = result;
+                console.log(result[0]);
+                this._redisString = result[0];
                 this._xmlStringChanged = true;
             }
         }.bind(this));

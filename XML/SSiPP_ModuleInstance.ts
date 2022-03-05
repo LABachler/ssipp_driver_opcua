@@ -6,6 +6,10 @@ export class SSiPP_ModuleInstance {
     private _reports: Array<SSiPP_Report>;
     private _moduleReport: SSiPP_ModuleReport;
 
+    constructor(node: Node) {
+
+    }
+
     get params(): Array<SSiPP_Param> {
         return this._params;
     }

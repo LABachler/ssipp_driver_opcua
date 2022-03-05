@@ -3,11 +3,12 @@ import { SSiPP_Paralell } from "./SSiPP_Paralell";
 import * as xpath from "xpath-ts";
 
 export class SSiPP_Process {
-    readonly scale: number;
+    readonly _scale: number;
+    readonly _name: String;
+    readonly _defaultQuantity: String;
     private _moduleInstances: Array<SSiPP_ModuleInstance|SSiPP_Paralell>;
 
-    constructor(doc: Document) {
-        //TODO https://www.npmjs.com/package/xpath-ts
+    constructor(doc) {
     }
 
     get moduleInstances(): Array<SSiPP_ModuleInstance | SSiPP_Paralell> {

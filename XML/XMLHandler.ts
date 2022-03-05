@@ -1,17 +1,28 @@
 import { RedisConnector} from "../Redis/RedisConnector";
 import { DOMParserImpl as dom } from "xmldom-ts";
 import { SSiPP_Process } from "./SSiPP_Process";
+import { ClientSession, MessageSecurityMode, OPCUAClient, SecurityPolicy } from "node-opcua-client";
+import * as xpath from "xpath-ts";
+
+const connectionStrategy = {
+    initialDelay: 1000,
+    maxRetry: 3
+}
+const options = {
+    applicationName: "MyClient",
+    connectionStrategy: connectionStrategy,
+    securityMode: MessageSecurityMode.None,
+    securityPolicy: SecurityPolicy.None,
+    endpointMustExist: false,
+};
 
 export class XMLHandler {
     readonly processId: number;
     private _redisConnector: RedisConnector;
     private _doc: XMLDocument;
-    private _running: boolean;
     private _process: SSiPP_Process;
-
-    get running(): boolean {
-        return this._running;
-    }
+    private _opcClient: OPCUAClient;
+    private _opcSession: ClientSession;
 
     get redisConnector(): RedisConnector {
         return this._redisConnector;
@@ -23,15 +34,11 @@ export class XMLHandler {
         else
             this.processId = parseInt(process.argv[2]);
         this._redisConnector = new RedisConnector();
-        this._running = true;
     }
 
     renewDocFromRedisString() {
         console.log("renewDocFromRedisStringCalled!");
         this._doc = new dom().parseFromString(this._redisConnector.redisString);
-        /*return new Promise((resolve, reject) => {
-            this._doc = new dom().parseFromString(this._redisConnector.redisString)
-        });*/
     }
 
     private processDoc() {
@@ -42,7 +49,13 @@ export class XMLHandler {
         if (this._redisConnector.xmlStringChanged == true) {
             await this.renewDocFromRedisString();
             await this.processDoc();
-            this._redisConnector.xmlStringChanged = false;
+            this._redisConnector.xmlStringChangeProcessed();
+            if (this._opcSession == null){
+                this._opcClient = OPCUAClient.create(options);
+                var endpointUrl = "opc.tcp://10.0.0.120:4840"; //TODO filter Doc for target ip
+                await this._opcClient.connect(endpointUrl);
+                this._opcSession = await this._opcClient.createSession();
+            }
         }
         return;
     }
