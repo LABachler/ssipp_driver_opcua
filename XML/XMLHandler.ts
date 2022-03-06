@@ -37,12 +37,6 @@ export class XMLHandler {
         if (this._redisConnector.xmlStringChanged == true) {
             this.renewDocFromRedisString();
             this.processDoc();
-            /*if (this._opcSession == null){
-                this._opcClient = OPCUAClient.create(options);
-                var endpointUrl = "opc.tcp://10.0.0.120:4840"; //TODO filter Doc for target ip
-                await this._opcClient.connect(endpointUrl);
-                this._opcSession = await this._opcClient.createSession();
-            }*/
         }
         return;
     }

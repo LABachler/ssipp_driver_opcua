@@ -12,9 +12,9 @@ export class SSiPP_Param {
     private readonly _name: string;
     private readonly _value: number;
 
-    constructor(e: Element, opcSession: ClientSession, dataBlockName: String){
-        this._name = e.getAttribute("name");
-        this._value = parseInt(e.innerHTML);
+    constructor(n: Node, opcSession: ClientSession, dataBlockName: String){
+        this._name = n.getAttribute("name");
+        this._value = parseInt(n.innerHTML);
         const nodeToWrite = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
             attributeId: AttributeIds.Value,
@@ -86,7 +86,7 @@ export class SSiPP_Report {
         return this._name;
     }
 
-    get value(): number {
-        return this._value.value;
+    get value(): DataValue {
+        return this._value;
     }
 }
