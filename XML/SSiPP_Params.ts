@@ -6,15 +6,17 @@ import {
     TimestampsToReturn
 } from "node-opcua-client";
 import * as opcua from "node-opcua";
-import {DataValue, MonitoringParametersOptions, ReadValueIdOptions} from "node-opcua";
+import { DataValue, MonitoringParametersOptions, ReadValueIdOptions } from "node-opcua";
+import * as xpath from "xpath-ts";
 
 export class SSiPP_Param {
     private readonly _name: string;
     private readonly _value: number;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String){
-        this._name = n.getAttribute("name");
-        this._value = parseInt(n.innerHTML);
+        this._name = <string>xpath.select1("/param/@name", n).valueOf();
+        this._value = parseInt(<string>xpath.select1("/param", n).valueOf());
+        console.log("Param " + this._name + " has value " + this._value);
         const nodeToWrite = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
             attributeId: AttributeIds.Value,
@@ -43,8 +45,8 @@ export class SSiPP_Report {
     private _value: DataValue;
     private _subscription: ClientSubscription;
 
-    constructor(e: Element, opcSession: ClientSession, dataBlockName: String) {
-        this._name = e.getAttribute("name");
+    constructor(n: Node, opcSession: ClientSession, dataBlockName: String) {
+        this._name = <string>xpath.select1("/report/@name", n).valueOf();
         this._subscription = ClientSubscription.create(opcSession, {
             requestedPublishingInterval: 1000,
             requestedLifetimeCount: 100,
@@ -88,5 +90,9 @@ export class SSiPP_Report {
 
     get value(): DataValue {
         return this._value;
+    }
+
+    terminateSubscription() {
+        this._subscription.terminate();
     }
 }

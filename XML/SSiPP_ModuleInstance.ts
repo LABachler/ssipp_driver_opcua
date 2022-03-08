@@ -19,10 +19,10 @@ const options = {
 };
 
 interface moduleInstanceAttributes {
-    dataBlockName: String;
-    lineId: String;
-    plc: String;
-    type: String;
+    dataBlockName: string;
+    lineId: string;
+    plc: string;
+    type: string;
 };
 
 export class SSiPP_ModuleInstance {
@@ -33,15 +33,18 @@ export class SSiPP_ModuleInstance {
     private _opcSession: ClientSession;
     private _moduleInstanceAttributes: moduleInstanceAttributes;
     private readonly _endpointUrl: string;
-    private _node: XMLDocument;
+    private _rootDoc: XMLDocument;
+    private readonly _node: Node;
 
-    constructor(node: Node) {
+    constructor(node: Node, rootDoc: XMLDocument) {
         this._opcClient = OPCUAClient.create(options);
         this._moduleInstanceAttributes.plc = <string>xpath.select1("/module_instance/@plc", node).valueOf();
         this._endpointUrl = opcUAPrefix + this._moduleInstanceAttributes.plc + socket;
-        this._moduleInstanceAttributes.lineId = <String>xpath.select1("/module_instance/@line_id").valueOf();
-        this._moduleInstanceAttributes.dataBlockName = <String>xpath.select1("/module_instance/@datablock_name").valueOf();
-        this._moduleInstanceAttributes.type = <String>xpath.select1("/module_instance/@type").valueOf();
+        this._moduleInstanceAttributes.lineId = <string>xpath.select1("/module_instance/@line_id").valueOf();
+        this._moduleInstanceAttributes.dataBlockName = <string>xpath.select1("/module_instance/@datablock_name").valueOf();
+        this._moduleInstanceAttributes.type = <string>xpath.select1("/module_instance/@type").valueOf();
+        this._rootDoc = rootDoc;
+        this._node = node;
     }
 
     setup = async (): Promise<any> => {
@@ -54,7 +57,7 @@ export class SSiPP_ModuleInstance {
             }
         }.bind(this));
         this._opcSession = await this._opcClient.createSession();
-        let result = this._node.evaluate(
+        let result = this._rootDoc.evaluate(
             "/module_instance/*",
             this._node,
             null,
@@ -68,7 +71,7 @@ export class SSiPP_ModuleInstance {
             else if (node.nodeName == "report")
                 this._reports.push(new SSiPP_Report(node, this._opcSession, this._moduleInstanceAttributes.dataBlockName));
             else if (node.nodeName == "module_instance_report")
-                this._moduleReport = new SSiPP_ModuleReport(node);
+                this._moduleReport = new SSiPP_ModuleReport(this._opcSession, this._moduleInstanceAttributes.dataBlockName);
             node = result.iterateNext();
         }
     }
