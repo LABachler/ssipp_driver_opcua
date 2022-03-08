@@ -14,7 +14,7 @@ export class SSiPP_Param {
     private readonly _value: number;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String){
-        this._name = <string>xpath.select1("/param/@name", n).valueOf();
+        this._name = "P_" + < string>xpath.select1("/param/@name", n).valueOf();
         this._value = parseInt(<string>xpath.select1("/param", n).valueOf());
         console.log("Param " + this._name + " has value " + this._value);
         const nodeToWrite = {
@@ -46,7 +46,7 @@ export class SSiPP_Report {
     private _subscription: ClientSubscription;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String) {
-        this._name = <string>xpath.select1("/report/@name", n).valueOf();
+        this._name = "R_" + <string>xpath.select1("/report/@name", n).valueOf();
         this._subscription = ClientSubscription.create(opcSession, {
             requestedPublishingInterval: 1000,
             requestedLifetimeCount: 100,

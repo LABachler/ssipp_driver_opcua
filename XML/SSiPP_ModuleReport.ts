@@ -49,7 +49,7 @@ export class SSiPP_ModuleReport {
         });
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"STATUS\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"Status\"",
             attributeId: AttributeIds.Value
         };
 
@@ -101,7 +101,7 @@ export class SSiPP_ModuleReport {
         });
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"ERROR\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"Message\"",
             attributeId: AttributeIds.Value
         };
 
@@ -142,7 +142,7 @@ export class SSiPP_ModuleReport {
         });
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"MESSAGE\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"Error\"",
             attributeId: AttributeIds.Value
         };
 
