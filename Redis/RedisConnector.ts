@@ -16,6 +16,7 @@ export class RedisConnector{
         this._conn.on("connect", function(){
             console.log("Redis Connector: Redis connected!");
         });
+        this._redisString = "";
     }
 
     get redisString(): string {
@@ -32,7 +33,9 @@ export class RedisConnector{
 
     async renewRedisString (processId: number) {
         await this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
-            if (result[0] !== this.redisString) {
+            //console.log("result[0]: " + result[0] + " type: " + typeof result[0]);
+            //console.log("redisString: " + this._redisString + " type: " + typeof this._redisString);
+            if (result[0] != this._redisString) {
                 console.log("Redis Connector: New String from Redis: ");
                 console.log("   " + result[0]);
                 this._redisString = result[0];

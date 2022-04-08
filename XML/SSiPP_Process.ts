@@ -12,25 +12,22 @@ export class SSiPP_Process {
     constructor(doc: XMLDocument) {
         let nodes = xpath.select("/process", doc);
         console.log("Process Constructor found process node: " + nodes[0].toString());
-        this._scale = <number>xpath.select1("/process/@scale", doc).valueOf();
+        //TODO reenable
+        //this._scale = <number>xpath.select1("/process/@scale", doc).valueOf();
         this._name = <String>xpath.select1("/process/@name", doc).valueOf();
         this._defaultQuantity = <String>xpath.select1("/process/@default_quantity", doc).valueOf();
-        let result = doc.evaluate(
-            "/process/*",
-            doc,
-            null,
-            xpath.XPathResult.ANY_TYPE,
-            null
-        );
-        let node = result.iterateNext();
-        while(node) {
-            console.log("Process Constructor: Node Name Test: " + node.nodeName)
+        let children: Node[] = <Node[]>xpath.select("/process/*", doc);
+
+        this._moduleInstances = new Array<SSiPP_ModuleInstance | SSiPP_Paralell>();
+        for (let i = 0; i < children.length; i++) {
+            let node = children[i];
+            console.log("Process Constructor: Node Name Test: " + node.nodeName);
             if (node.nodeName === "module_instance") {
-                this._moduleInstances.push(new SSiPP_ModuleInstance(node));
+                this._moduleInstances.push(new SSiPP_ModuleInstance(node, doc));
+                (<SSiPP_ModuleInstance>this._moduleInstances[this._moduleInstances.length - 1]).setup().then();
             } else {
-                this._moduleInstances.push(new SSiPP_Paralell(node));
+                this._moduleInstances.push(new SSiPP_Paralell(node, doc));
             }
-            node = result.iterateNext();
         }
     }
 
@@ -39,6 +36,9 @@ export class SSiPP_Process {
     }
 
     updateProcess(doc: XMLDocument) {
-
+        let children: Node[] = <Node[]>xpath.select("/process/*", doc);
+        for (let i = 0; i < this._moduleInstances.length && i < children.length; i++){
+            this._moduleInstances[i].update(children[i]);
+        }
     }
 }

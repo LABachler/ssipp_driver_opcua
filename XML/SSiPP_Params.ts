@@ -11,11 +11,17 @@ import * as xpath from "xpath-ts";
 
 export class SSiPP_Param {
     private readonly _name: string;
-    private readonly _value: number;
+    private _value: number;
+    private _opcSession: ClientSession;
+    private _dataBlockName: String;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String){
-        this._name = "P_" + < string>xpath.select1("/param/@name", n).valueOf();
-        this._value = parseInt(<string>xpath.select1("/param", n).valueOf());
+        this._opcSession = opcSession;
+        this._dataBlockName = dataBlockName;
+        let el: Element = <Element> n;
+        this._name = el.attributes.getNamedItem("name").value;
+        console.log("Param value: " + el.nodeValue);
+        this._value = parseInt(el.nodeValue);
         console.log("Param " + this._name + " has value " + this._value);
         const nodeToWrite = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
@@ -29,6 +35,25 @@ export class SSiPP_Param {
             }
         }
         opcSession.write(nodeToWrite);
+    }
+
+    update(n: Node) {
+        let el: Element = <Element> n;
+        if (parseInt(el.nodeValue) != this._value) {
+            this._value = parseInt(el.nodeValue);
+            const nodeToWrite = {
+                nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"" + this._name + "\"",
+                attributeId: AttributeIds.Value,
+                indexRange: null,
+                value: {
+                    value: {
+                        dataType: opcua.DataType.Double,
+                        value: this._value
+                    }
+                }
+            }
+            this._opcSession.write(nodeToWrite);
+        }
     }
 
     get name(): string {
@@ -46,7 +71,8 @@ export class SSiPP_Report {
     private _subscription: ClientSubscription;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String) {
-        this._name = "R_" + <string>xpath.select1("/report/@name", n).valueOf();
+        let el: Element = <Element> n;
+        this._name = el.attributes.getNamedItem("name").value;
         this._subscription = ClientSubscription.create(opcSession, {
             requestedPublishingInterval: 1000,
             requestedLifetimeCount: 100,

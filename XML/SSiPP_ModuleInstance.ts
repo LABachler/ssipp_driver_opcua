@@ -18,11 +18,11 @@ const options = {
     endpointMustExist: false,
 };
 
-interface moduleInstanceAttributes {
-    dataBlockName: string;
-    lineId: string;
-    plc: string;
-    type: string;
+class moduleInstanceAttributes {
+    public dataBlockName: string;
+    public lineId: string;
+    public plc: string;
+    public type: string;
 };
 
 export class SSiPP_ModuleInstance {
@@ -34,45 +34,52 @@ export class SSiPP_ModuleInstance {
     private _moduleInstanceAttributes: moduleInstanceAttributes;
     private readonly _endpointUrl: string;
     private _rootDoc: XMLDocument;
-    private readonly _node: Node;
+    private _element: Element;
 
     constructor(node: Node, rootDoc: XMLDocument) {
+        console.log("Module instance constructor: " + node);
         this._opcClient = OPCUAClient.create(options);
-        this._moduleInstanceAttributes.plc = <string>xpath.select1("/module_instance/@plc", node).valueOf();
+        let el: Element = <Element>node;
+        this._moduleInstanceAttributes = new moduleInstanceAttributes();
+        this._moduleInstanceAttributes.plc = el.attributes.getNamedItem("plc").value;
         this._endpointUrl = opcUAPrefix + this._moduleInstanceAttributes.plc + socket;
-        this._moduleInstanceAttributes.lineId = <string>xpath.select1("/module_instance/@line_id").valueOf();
-        this._moduleInstanceAttributes.dataBlockName = <string>xpath.select1("/module_instance/@datablock_name").valueOf();
-        this._moduleInstanceAttributes.type = <string>xpath.select1("/module_instance/@type").valueOf();
+        this._moduleInstanceAttributes.lineId = el.attributes.getNamedItem("line_id").value;
+        this._moduleInstanceAttributes.dataBlockName = el.attributes.getNamedItem("datablock_name").value;
+        this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._rootDoc = rootDoc;
-        this._node = node;
+        this._element = el;
     }
 
     setup = async (): Promise<any> => {
-        await this._opcClient.connect(this._endpointUrl, function (err){
+        this._opcClient.connect(this._endpointUrl, async function (err) {
             if (err) {
                 console.error("Cannot connect to endpoint: " + this._endpointUrl);
             } else {
                 console.log("Connected " + this._moduleInstanceAttributes + " on " + this._moduleInstanceAttributes.plc
                     + "/" + this._moduleInstanceAttributes.dataBlockName + ".");
+                this._opcSession = await this._opcClient.createSession();
+                for (let i = 0; i < this._element.childNodes.length; i++){
+                    let node = this._element.childNodes[i];
+                    if (node.nodeName == "param")
+                        this._params.push(new SSiPP_Param(node, this._opcSession, this._moduleInstanceAttributes.dataBlockName));
+                    else if (node.nodeName == "report")
+                        this._reports.push(new SSiPP_Report(node, this._opcSession, this._moduleInstanceAttributes.dataBlockName));
+                    else if (node.nodeName == "module_instance_report")
+                        this._moduleReport = new SSiPP_ModuleReport(this._element.childNodes[i], this._opcSession,
+                            this._moduleInstanceAttributes.dataBlockName);
+                }
             }
         }.bind(this));
-        this._opcSession = await this._opcClient.createSession();
-        let result = this._rootDoc.evaluate(
-            "/module_instance/*",
-            this._node,
-            null,
-            xpath.XPathResult.ANY_TYPE,
-            null
-        );
-        let node = result.iterateNext();
-        while(node) {
+    }
+
+    update(node: Node) {
+        this._element = <Element> node;
+        for (let i = 0, paramsCounter = 0; i < this._element.childNodes.length; i++){
+            let node = this._element.childNodes[i];
             if (node.nodeName == "param")
-                this._params.push(new SSiPP_Param(node, this._opcSession, this._moduleInstanceAttributes.dataBlockName));
-            else if (node.nodeName == "report")
-                this._reports.push(new SSiPP_Report(node, this._opcSession, this._moduleInstanceAttributes.dataBlockName));
-            else if (node.nodeName == "module_instance_report")
-                this._moduleReport = new SSiPP_ModuleReport(this._opcSession, this._moduleInstanceAttributes.dataBlockName);
-            node = result.iterateNext();
+                this._params[paramsCounter++].update(node);
+            else if (node.nodeName == "module_report")
+                this._moduleReport.update(node);
         }
     }
 

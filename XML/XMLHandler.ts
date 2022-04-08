@@ -29,7 +29,10 @@ export class XMLHandler {
 
     private processDoc() {
         console.log("XMLHandler: processDoc called!");
-        this._process = new SSiPP_Process(this._doc);
+        if (this._process == null)
+            this._process = new SSiPP_Process(this._doc);
+        else
+            this._process.updateProcess(this._doc);
         this._redisConnector.xmlStringChangeProcessed();
     }
 
