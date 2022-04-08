@@ -43,13 +43,13 @@ export class SSiPP_ModuleReport {
         for (let i = 0; i < el.childNodes.length; i++) {
             switch (el.childNodes[i].nodeName) {
                 case "Status":
-                    this.status = el.childNodes[i].nodeValue;
+                    this.status = el.childNodes[i].textContent;
                     break;
                 case "time_started":
-                    this._timeStarted = el.childNodes[i].nodeValue;
+                    this._timeStarted = el.childNodes[i].textContent;
                     break;
                 case "time_finished":
-                    this._timeFinished = el.childNodes[i].nodeValue;
+                    this._timeFinished = el.childNodes[i].textContent;
                     break;
             }
         }
@@ -91,7 +91,7 @@ export class SSiPP_ModuleReport {
         );
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
-            this.status = dataValue.toString();
+            this.status = dataValue.value.value;
         });
     }
 
@@ -105,7 +105,7 @@ export class SSiPP_ModuleReport {
             priority: 10
         }); //TODO understand options, right now its just 10 s monitor
 
-        this._errorSubscription.on("started", function(){
+        this._messageSubscription.on("started", function(){
             console.log("Message-Subscription for " + dataBlockName + " started.");
         }).on("keepalive", function () {
             console.log("Message-Subscription for " + dataBlockName + " keepalive.");
@@ -125,14 +125,15 @@ export class SSiPP_ModuleReport {
         };
 
         const monitoredItem = ClientMonitoredItem.create(
-            this._errorSubscription,
+            this._statusSubscription,
             itemToMonitor,
             parameters,
             TimestampsToReturn.Both
         );
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
-            this._error = dataValue.toString();
+            this._message = dataValue.value.value;
+            console.log("Message change: " + this._message);
         });
     }
 
@@ -149,7 +150,7 @@ export class SSiPP_ModuleReport {
         this._messageSubscription.on("started", function(){
             console.log("Error-Subscription for " + dataBlockName + "started.");
         }).on("keepalive", function () {
-            console.log("Error-Subscription for " + dataBlockName + "keepalive.");
+            console.log("Error-Subscription for " + dataBlockName + " keepalive.");
         }).on("terminated", function () {
             console.error("Error-Subscription for " + dataBlockName + "terminated.");
         });
@@ -173,16 +174,8 @@ export class SSiPP_ModuleReport {
         );
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
-            this._message = dataValue.toString();
+            this._message = dataValue.value.value;
         });
-    }
-
-    get timeStarted(): string {
-        return this._timeStarted;
-    }
-
-    get timeFinished(): string {
-        return this._timeFinished;
     }
 
     get status(): string {
@@ -238,19 +231,10 @@ export class SSiPP_ModuleReport {
         this._opcSession.write(nodeToWrite);
     }
 
-    get message(): string {
-        return this._message;
-    }
-
-    get error(): string {
-        return this._error;
-    }
-
     terminateSessions() {
         this._messageSubscription.terminate();
         this._statusSubscription.terminate();
         this._errorSubscription.terminate();
-        this._timeFinished = String(new Date().valueOf());
     }
 
     get xml() : string {

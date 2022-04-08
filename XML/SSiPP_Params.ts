@@ -20,8 +20,8 @@ export class SSiPP_Param {
         this._dataBlockName = dataBlockName;
         let el: Element = <Element> n;
         this._name = el.attributes.getNamedItem("name").value;
-        console.log("Param value: " + el.nodeValue);
-        this._value = parseInt(el.nodeValue);
+        console.log("Param value: " + el.textContent);
+        this._value = parseInt(el.textContent);
         console.log("Param " + this._name + " has value " + this._value);
         const nodeToWrite = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
@@ -29,7 +29,7 @@ export class SSiPP_Param {
             indexRange: null,
             value: {
                 value: {
-                    dataType: opcua.DataType.Double,
+                    dataType: opcua.DataType.Int16,
                     value: this._value
                 }
             }
@@ -39,8 +39,8 @@ export class SSiPP_Param {
 
     update(n: Node) {
         let el: Element = <Element> n;
-        if (parseInt(el.nodeValue) != this._value) {
-            this._value = parseInt(el.nodeValue);
+        if (parseInt(el.textContent) != this._value) {
+            this._value = parseInt(el.textContent);
             const nodeToWrite = {
                 nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"" + this._name + "\"",
                 attributeId: AttributeIds.Value,
@@ -106,7 +106,8 @@ export class SSiPP_Report {
         );
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
-            this._value = dataValue;
+            this._value = dataValue.value.value;
+            console.log(this._name + " has value: " + this._value);
         });
     }
 

@@ -48,6 +48,8 @@ export class SSiPP_ModuleInstance {
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._rootDoc = rootDoc;
         this._element = el;
+        this._params = new Array<SSiPP_Param>();
+        this._reports = new Array<SSiPP_Report>();
     }
 
     setup = async (): Promise<any> => {
