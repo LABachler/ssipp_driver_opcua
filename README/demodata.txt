@@ -1,4 +1,4 @@
 enter into cmd
 
 memurai-cli
-rpush ssipp_process_data '<?xml version="1.0" encoding="utf-8" standalone="no"?><process default_quantity="100kg" id="0" multiplier="" name="DemoProcess"><module_instance datablock_name="DemoData" line_id="1" plc="10.0.0.120" type="DemoBlock"><module_instance_report><time_started></time_started><time_finished></time_finished><status>Start</status><message></message><error></error></module_instance_report><param name="p_number">100</param><report name="r_number"></report></module_instance></process>'
+set ssipp_0 '<?xml version="1.0" encoding="utf-8" standalone="no"?><process default_quantity="100kg" id="0" multiplier="" name="DemoProcess"><module_instance datablock_name="DemoData" line_id="1" plc="10.0.0.120" type="DemoBlock"><module_instance_report><time_started></time_started><time_finished></time_finished><status>IDLE</status><message></message><error></error></module_instance_report><param name="p_number">100</param><report name="r_number"></report></module_instance></process>'

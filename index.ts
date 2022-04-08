@@ -6,6 +6,10 @@ async function main() {
     Promise.resolve().then(function resolver(): any {
         return xmlHandler.redisConnector.renewRedisString(xmlHandler.processId)
             .then(xmlHandler.renewDoc)
+            .then(function (): Promise<any> {
+                xmlHandler.redisConnector.setRedis(xmlHandler.xml, xmlHandler.processId);
+                return;
+            })
             .catch(e => console.log(e))
             .then((function (){
                 process.nextTick(resolver);

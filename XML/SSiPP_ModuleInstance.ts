@@ -96,4 +96,21 @@ export class SSiPP_ModuleInstance {
     get moduleReport(): SSiPP_ModuleReport {
         return this._moduleReport;
     }
+
+    get xml(): string {
+        let ret = "<module_instance " +
+            "datablock_name=\"" + this._moduleInstanceAttributes.dataBlockName + "\" " +
+            "line_id=\"" + this._moduleInstanceAttributes.lineId + "\" " +
+            "plc=\"" + this._moduleInstanceAttributes.plc + "\" " +
+            "type=\"" + this._moduleInstanceAttributes.type + "\"" +
+            ">";
+        ret += this._moduleReport.xml;
+        for (let i = 0; i < this._params.length; i++)
+            ret += this._params[i].xml;
+        for (let i = 0; i < this._reports.length; i++)
+            ret += this._reports[i].xml;
+        ret += "</module_instance>";
+
+        return ret;
+    }
 }

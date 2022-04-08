@@ -43,4 +43,8 @@ export class XMLHandler {
         }
         return;
     }
+
+    get xml():string {
+        return this._process.xml;
+    }
 }

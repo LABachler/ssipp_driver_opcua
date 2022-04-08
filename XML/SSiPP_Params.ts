@@ -63,11 +63,17 @@ export class SSiPP_Param {
     get value(): number {
         return this._value;
     }
+
+    get xml(): string {
+        return "<param name=\"" + this._name + "\">" +
+            (this.value == undefined ? "" : this.value) +
+            "</param>";
+    }
 }
 
 export class SSiPP_Report {
     private readonly _name: string;
-    private _value: DataValue;
+    private _value: string;
     private _subscription: ClientSubscription;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String) {
@@ -82,11 +88,11 @@ export class SSiPP_Report {
             priority: 10
         }); //TODO understand options, right now its just 10 s monitor
         this._subscription.on("started", function(){
-            console.log("Subscription for " + this._name + "started.");
+            console.log("Report-Subscription for " + dataBlockName + "started.");
         }).on("keepalive", function () {
-            console.log("Subscription for " + this._name + "keepalive.");
+            console.log("Report-Subscription for " + dataBlockName + "keepalive.");
         }).on("terminated", function () {
-            console.error("Subscription for " + this._name + "terminated.");
+            console.error("Report-Subscription for " + dataBlockName + "terminated.");
         });
         const itemToMonitor: ReadValueIdOptions = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
@@ -115,11 +121,19 @@ export class SSiPP_Report {
         return this._name;
     }
 
-    get value(): DataValue {
+    get value(): string {
+        if (this._value == undefined)
+            return "";
         return this._value;
     }
 
     terminateSubscription() {
         this._subscription.terminate();
+    }
+
+    get xml(): string {
+        return "<report name=\"" + this._name + "\">" +
+            this.value +
+            "</report>";
     }
 }

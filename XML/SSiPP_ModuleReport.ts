@@ -42,7 +42,7 @@ export class SSiPP_ModuleReport {
         let el: Element = <Element> n;
         for (let i = 0; i < el.childNodes.length; i++) {
             switch (el.childNodes[i].nodeName) {
-                case "Status":
+                case "status":
                     this.status = el.childNodes[i].textContent;
                     break;
                 case "time_started":
@@ -229,7 +229,10 @@ export class SSiPP_ModuleReport {
             }
         }
         this._opcSession.write(nodeToWrite);
+        if (this._status === State.STOPPED)
+            this.terminateSessions();
     }
+
 
     terminateSessions() {
         this._messageSubscription.terminate();
@@ -238,7 +241,12 @@ export class SSiPP_ModuleReport {
     }
 
     get xml() : string {
-        //todo
-        return "";
+        return "<module_instance_report>" +
+            "<time_started>" + this._timeStarted + "</time_started>" +
+            "<time_finished></time_finished>" +
+            "<status>" + this.status + "</status>" +
+            "<message>" + (this._message == undefined ? "" : this._message) + "</message>" +
+            "<error>" + (this._error == undefined ? "" : this._error) + "</error>" +
+            "</module_instance_report>";
     }
 }

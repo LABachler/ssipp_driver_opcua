@@ -31,14 +31,22 @@ export class RedisConnector{
         this._xmlStringChanged = false;
     }
 
+    setRedis(value: string, processId: number) {
+        if (value !== this._redisString){
+            console.log("Set redis string to: " + value);
+            this._redisString = value;
+            this._conn.set("ssipp_" + processId, value);
+        }
+    }
+
     async renewRedisString (processId: number) {
-        await this._conn.lrange("ssipp_process_data", processId, processId).then(function (result) {
-            //console.log("result[0]: " + result[0] + " type: " + typeof result[0]);
+        await this._conn.get("ssipp_" + processId).then(function (result) {
+            //console.log("result[0]: " + result + " type: " + typeof result);
             //console.log("redisString: " + this._redisString + " type: " + typeof this._redisString);
-            if (result[0] != this._redisString) {
+            if (result != this._redisString) {
                 console.log("Redis Connector: New String from Redis: ");
-                console.log("   " + result[0]);
-                this._redisString = result[0];
+                console.log("   " + result);
+                this._redisString = result;
                 this._xmlStringChanged = true;
             }
         }.bind(this));

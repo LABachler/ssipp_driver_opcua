@@ -24,4 +24,13 @@ export class SSiPP_Paralell {
             this._moduleInstances[i].update(el.childNodes[i]);
         }
     }
+
+    get xml(): string {
+        let ret = "<paralell>";
+        for (let i = 0; i < this._moduleInstances.length; i++)
+            ret += this._moduleInstances[i].xml;
+        ret += "</paralell>";
+
+        return ret;
+    }
 }
