@@ -45,6 +45,7 @@ export class SSiPP_ModuleInstance {
         this._endpointUrl = opcUAPrefix + this._moduleInstanceAttributes.plc + socket;
         this._moduleInstanceAttributes.lineId = el.attributes.getNamedItem("line_id").value;
         this._moduleInstanceAttributes.dataBlockName = el.attributes.getNamedItem("datablock_name").value;
+        //todo @name einfuegen
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._rootDoc = rootDoc;
         this._element = el;

@@ -19,6 +19,7 @@ export class SSiPP_Param {
         this._opcSession = opcSession;
         this._dataBlockName = dataBlockName;
         let el: Element = <Element> n;
+        //todo + "P_" and remove after
         this._name = el.attributes.getNamedItem("name").value;
         console.log("Param value: " + el.textContent);
         this._value = parseInt(el.textContent);
