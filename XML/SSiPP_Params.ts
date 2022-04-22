@@ -7,20 +7,18 @@ import {
 } from "node-opcua-client";
 import * as opcua from "node-opcua";
 import { DataValue, MonitoringParametersOptions, ReadValueIdOptions } from "node-opcua";
-import * as xpath from "xpath-ts";
 
 export class SSiPP_Param {
     private readonly _name: string;
     private _value: number;
     private _opcSession: ClientSession;
-    private _dataBlockName: String;
+    private readonly _dataBlockName: String;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String){
         this._opcSession = opcSession;
         this._dataBlockName = dataBlockName;
         let el: Element = <Element> n;
-        //todo + "P_" and remove after
-        this._name = el.attributes.getNamedItem("name").value;
+        this._name = "P_" + el.attributes.getNamedItem("name").value;
         console.log("Param value: " + el.textContent);
         this._value = parseInt(el.textContent);
         console.log("Param " + this._name + " has value " + this._value);
@@ -30,7 +28,7 @@ export class SSiPP_Param {
             indexRange: null,
             value: {
                 value: {
-                    dataType: opcua.DataType.Int16,
+                    dataType: opcua.DataType.Double,
                     value: this._value
                 }
             }
@@ -58,7 +56,7 @@ export class SSiPP_Param {
     }
 
     get name(): string {
-        return this._name;
+        return this._name.substring(2);
     }
 
     get value(): number {
@@ -66,7 +64,7 @@ export class SSiPP_Param {
     }
 
     get xml(): string {
-        return "<param name=\"" + this._name + "\">" +
+        return "<param name=\"" + this.name + "\">" +
             (this.value == undefined ? "" : this.value) +
             "</param>";
     }
@@ -75,26 +73,11 @@ export class SSiPP_Param {
 export class SSiPP_Report {
     private readonly _name: string;
     private _value: string;
-    private _subscription: ClientSubscription;
 
-    constructor(n: Node, opcSession: ClientSession, dataBlockName: String) {
+    constructor(n: Node, opcSession: ClientSession, dataBlockName: String, subscription: ClientSubscription) {
         let el: Element = <Element> n;
-        this._name = el.attributes.getNamedItem("name").value;
-        this._subscription = ClientSubscription.create(opcSession, {
-            requestedPublishingInterval: 1000,
-            requestedLifetimeCount: 100,
-            requestedMaxKeepAliveCount: 10,
-            maxNotificationsPerPublish: 100,
-            publishingEnabled: true,
-            priority: 10
-        }); //TODO understand options, right now its just 10 s monitor
-        this._subscription.on("started", function(){
-            console.log("Report-Subscription for " + dataBlockName + "started.");
-        }).on("keepalive", function () {
-            console.log("Report-Subscription for " + dataBlockName + "keepalive.");
-        }).on("terminated", function () {
-            console.error("Report-Subscription for " + dataBlockName + "terminated.");
-        });
+        this._name = "R_" + el.attributes.getNamedItem("name").value;
+
         const itemToMonitor: ReadValueIdOptions = {
             nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
             attributeId: AttributeIds.Value
@@ -106,7 +89,7 @@ export class SSiPP_Report {
         };
 
         const monitoredItem = ClientMonitoredItem.create(
-            this._subscription,
+            subscription,
             itemToMonitor,
             parameters,
             TimestampsToReturn.Both
@@ -119,7 +102,7 @@ export class SSiPP_Report {
     }
 
     get name(): string {
-        return this._name;
+        return this._name.substring(2);
     }
 
     get value(): string {
@@ -128,12 +111,8 @@ export class SSiPP_Report {
         return this._value;
     }
 
-    terminateSubscription() {
-        this._subscription.terminate();
-    }
-
     get xml(): string {
-        return "<report name=\"" + this._name + "\">" +
+        return "<report name=\"" + this.name + "\">" +
             this.value +
             "</report>";
     }

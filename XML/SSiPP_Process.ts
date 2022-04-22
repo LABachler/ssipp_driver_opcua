@@ -6,14 +6,13 @@ export class SSiPP_Process {
     readonly _scale: number;
     readonly _name: String;
     readonly _defaultQuantity: String;
-    private _moduleInstances: Array<SSiPP_ModuleInstance|SSiPP_Paralell>;
+    private readonly _moduleInstances: Array<SSiPP_ModuleInstance|SSiPP_Paralell>;
     readonly _id: number;
 
     constructor(doc: XMLDocument) {
         let nodes = xpath.select("/process", doc);
         console.log("Process Constructor found process node: " + nodes[0].toString());
-        //TODO reenable
-        //this._scale = <number>xpath.select1("/process/@scale", doc).valueOf();
+        this._scale = <number>xpath.select1("/process/@scale", doc).valueOf();
         this._name = <String>xpath.select1("/process/@name", doc).valueOf();
         this._defaultQuantity = <String>xpath.select1("/process/@default_quantity", doc).valueOf();
         this._id = <number>xpath.select1("/process/@id", doc).valueOf();
@@ -30,10 +29,6 @@ export class SSiPP_Process {
                 this._moduleInstances.push(new SSiPP_Paralell(node, doc));
             }
         }
-    }
-
-    get moduleInstances(): Array<SSiPP_ModuleInstance | SSiPP_Paralell> {
-        return this._moduleInstances;
     }
 
     updateProcess(doc: XMLDocument) {

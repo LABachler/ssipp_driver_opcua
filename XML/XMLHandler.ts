@@ -1,12 +1,10 @@
 import { RedisConnector} from "../Redis/RedisConnector";
 import { DOMParserImpl as dom } from "xmldom-ts";
 import { SSiPP_Process } from "./SSiPP_Process";
-import { ClientSession, MessageSecurityMode, OPCUAClient, SecurityPolicy } from "node-opcua-client";
-import * as xpath from "xpath-ts";
 
 export class XMLHandler {
     readonly processId: number;
-    private _redisConnector: RedisConnector;
+    private readonly _redisConnector: RedisConnector;
     private _doc: XMLDocument;
     private _process: SSiPP_Process;
 
