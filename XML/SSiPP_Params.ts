@@ -41,7 +41,7 @@ export class SSiPP_Param {
         if (parseInt(el.textContent) != this._value) {
             this._value = parseInt(el.textContent);
             const nodeToWrite = {
-                nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"" + this._name + "\"",
+                nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._name + "\"",
                 attributeId: AttributeIds.Value,
                 indexRange: null,
                 value: {
@@ -79,7 +79,7 @@ export class SSiPP_Report {
         this._name = "R_" + el.attributes.getNamedItem("name").value;
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._name + "\"",
             attributeId: AttributeIds.Value
         }
         const parameters: MonitoringParametersOptions = {
