@@ -12,7 +12,8 @@ async function main() {
             })
             .catch(e => console.log(e))
             .then((function (){
-                process.nextTick(resolver);
+                if (!xmlHandler.isFinished())
+                    process.nextTick(resolver);
                 }));
     }).catch((error) => {
         console.log("Error: " + error);

@@ -180,6 +180,8 @@ export class SSiPP_ModuleReport {
     }
 
     isFinished(): boolean {
+        if (this._status == 2 || this._status == 5)
+            return true;
         return false;
     }
 

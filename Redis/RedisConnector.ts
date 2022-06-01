@@ -31,7 +31,7 @@ export class RedisConnector{
         this._xmlStringChanged = false;
     }
 
-    setRedis(value: string, processId: number) {
+    setRedis(value: string, processId: string) {
         if (value !== this._redisString){
             console.log("Set redis string to: " + value);
             this._redisString = value;
@@ -39,7 +39,7 @@ export class RedisConnector{
         }
     }
 
-    async renewRedisString (processId: number) {
+    async renewRedisString (processId: string) {
         await this._conn.get("ssipp_" + processId).then(function (result) {
             //console.log("result[0]: " + result + " type: " + typeof result);
             //console.log("redisString: " + this._redisString + " type: " + typeof this._redisString);

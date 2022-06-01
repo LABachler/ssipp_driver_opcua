@@ -1,12 +1,12 @@
 import { RedisConnector} from "../Redis/RedisConnector";
 import { DOMParserImpl as dom } from "xmldom-ts";
-import { SSiPP_Process } from "./SSiPP_Process";
+import {SSiPP_ModuleInstance} from "./SSiPP_ModuleInstance";
 
 export class XMLHandler {
-    readonly processId: number;
+    readonly processId: string;
     private readonly _redisConnector: RedisConnector;
     private _doc: XMLDocument;
-    private _process: SSiPP_Process;
+    private _moduleInstance: SSiPP_ModuleInstance;
 
     get redisConnector(): RedisConnector {
         return this._redisConnector;
@@ -14,9 +14,9 @@ export class XMLHandler {
 
     constructor() {
         if (process.argv[2] === undefined)
-            this.processId = 0; //0 is DemoData
+            this.processId = "" + 0; //0 is DemoData
         else
-            this.processId = parseInt(process.argv[2]);
+            this.processId = process.argv[2];
         this._redisConnector = new RedisConnector();
     }
 
@@ -27,10 +27,10 @@ export class XMLHandler {
 
     private processDoc() {
         console.log("XMLHandler: processDoc called!");
-        if (this._process == null)
-            this._process = new SSiPP_Process(this._doc);
+        if (this._moduleInstance == null)
+            this._moduleInstance = new SSiPP_ModuleInstance(this._doc);
         else
-            this._process.updateProcess(this._doc);
+            this._moduleInstance.update(this._doc);
         this._redisConnector.xmlStringChangeProcessed();
     }
 
@@ -43,6 +43,10 @@ export class XMLHandler {
     }
 
     get xml():string {
-        return this._process.xml;
+        return this._moduleInstance.xml;
+    }
+
+    isFinished() : boolean {
+        return this._moduleInstance.isFinished();
     }
 }
