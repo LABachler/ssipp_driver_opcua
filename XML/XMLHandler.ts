@@ -21,14 +21,14 @@ export class XMLHandler {
     }
 
     renewDocFromRedisString() {
-        console.log("XMLHandler: renewDocFromRedisString called!");
         this._doc = new dom().parseFromString(this._redisConnector.redisString.toString());
     }
 
     private processDoc() {
-        console.log("XMLHandler: processDoc called!");
-        if (this._moduleInstance == null)
+        if (this._moduleInstance == null) {
             this._moduleInstance = new SSiPP_ModuleInstance(this._doc);
+            this._moduleInstance.setup().then();
+        }
         else
             this._moduleInstance.update(this._doc);
         this._redisConnector.xmlStringChangeProcessed();
@@ -48,5 +48,10 @@ export class XMLHandler {
 
     isFinished() : boolean {
         return this._moduleInstance.isFinished();
+    }
+
+
+    get moduleInstance(): SSiPP_ModuleInstance {
+        return this._moduleInstance;
     }
 }

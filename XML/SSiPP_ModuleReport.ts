@@ -33,6 +33,7 @@ export class SSiPP_ModuleReport {
     update (n: Node) {
         let el: Element = <Element> n;
         for (let i = 0; i < el.childNodes.length; i++) {
+            console.log(el.childNodes[i].nodeName);
             switch (el.childNodes[i].nodeName) {
                 case "time_started":
                     this._timeStarted = el.childNodes[i].textContent;
@@ -40,19 +41,19 @@ export class SSiPP_ModuleReport {
                 case "time_finished":
                     this._timeFinished = el.childNodes[i].textContent;
                     break;
-                case "STATUS":
+                case "status":
                     this.status = +el.childNodes[i].textContent;
                     break;
-                case "COMMAND":
+                case "command":
                     this.command = +el.childNodes[i].textContent;
                     break;
-                case "MESSAGE":
+                case "message":
                     this._message = el.childNodes[i].textContent;
                     break;
-                case "E_MSG":
+                case "e_msg":
                     this._errorMessage = el.childNodes[i].textContent;
                     break;
-                case "ERROR":
+                case "error":
                     this._error = el.childNodes[i].textContent;
                     break;
             }
@@ -176,13 +177,15 @@ export class SSiPP_ModuleReport {
     }
 
     set command(command: number) {
+        console.log("set command: " + command);
         this._command = command;
         this.writeCommand();
     }
 
     private writeCommand() {
+        console.log("ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"");
         const nodeToWrite = {
-            nodeId: "ns=3;s=\"" + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"",
+            nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"",
             attributeId: AttributeIds.Value,
             indexRange: null,
             value: {
@@ -216,11 +219,11 @@ export class SSiPP_ModuleReport {
         return "<module_instance_report>" +
             "<time_started>" + this._timeStarted + "</time_started>" +
             "<time_finished></time_finished>" +
-            "<STATUS>" + this._status + "</STATUS>" +
-            "<COMMAND>" + this._command + "</COMMAND>" +
-            "<MESSAGE>" + (this._message == undefined ? "" : this._message) + "</MESSAGE>" +
-            "<E_MSG>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</E_MSG>" +
-            "<ERROR>" + this._error.toString() + "</ERROR>" +
+            "<status>" + this._status + "</status>" +
+            "<command>" + this._command + "</command>" +
+            "<message>" + (this._message == undefined ? "" : this._message) + "</message>" +
+            "<e_msg>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</e_msg>" +
+            "<error>" + this._error.toString() + "</error>" +
             "</module_instance_report>";
     }
 }

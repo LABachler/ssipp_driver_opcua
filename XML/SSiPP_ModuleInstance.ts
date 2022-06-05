@@ -31,7 +31,7 @@ class moduleInstanceAttributes {
 export class SSiPP_ModuleInstance {
     private _params: Array<SSiPP_Param>;
     private _reports: Array<SSiPP_Report>;
-    private _moduleReport: SSiPP_ModuleReport;
+    private _moduleInstanceReport: SSiPP_ModuleReport;
     private _opcClient: OPCUAClient;
     private _opcSession: ClientSession;
     private _moduleInstanceAttributes: moduleInstanceAttributes;
@@ -51,7 +51,8 @@ export class SSiPP_ModuleInstance {
         this._moduleInstanceAttributes.dataBlockName = el.attributes.getNamedItem("datablock_name").value;
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._moduleInstanceAttributes.driverType = el.attributes.getNamedItem("driver").value;
-        this._element = el;
+        this._element = <Element> node[0];
+        console.log(this._element.nodeName);
         this._params = new Array<SSiPP_Param>();
         this._reports = new Array<SSiPP_Report>();
     }
@@ -74,15 +75,17 @@ export class SSiPP_ModuleInstance {
                 });
 
                 this._subscription.on("started", function(){
-                    console.log("Subscription for " + this._moduleInstanceAttributes.dataBlockName + "started.");
+                    console.log("Subscription for hugo started.");
                 }).on("keepalive", function () {
-                    console.log("Error-Subscription for " + this._moduleInstanceAttributes.dataBlockName + " keepalive.");
+                    console.log("Error-Subscription for hugo keepalive.");
                 }).on("terminated", function () {
-                    console.error("Error-Subscription for " + this._moduleInstanceAttributes.dataBlockName + "terminated.");
+                    console.error("Error-Subscription for hugo terminated.");
                 });
 
                 for (let i = 0; i < this._element.childNodes.length; i++){
-                    let node = this._element.childNodes[i];
+                    console.log(this._element.nodeName);
+                    let node = this._element.childNodes[0];
+                    console.log(node.nodeName);
                     if (node.nodeName == "param")
                         this._params.push(new SSiPP_Param(node, this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName));
@@ -90,7 +93,7 @@ export class SSiPP_ModuleInstance {
                         this._reports.push(new SSiPP_Report(node, this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName, this._subscription));
                     else if (node.nodeName == "module_instance_report")
-                        this._moduleReport = new SSiPP_ModuleReport(this._element.childNodes[i], this._opcSession,
+                        this._moduleInstanceReport = new SSiPP_ModuleReport(this._element.childNodes[i], this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName, this._subscription);
                 }
             }
@@ -103,9 +106,9 @@ export class SSiPP_ModuleInstance {
             let node = this._element.childNodes[i];
             if (node.nodeName == "param")
                 this._params[paramsCounter++].update(node);
-            else if (node.nodeName == "module_report"){
-                this._moduleReport.update(node);
-                if (this._moduleReport.isFinished())
+            else if (node.nodeName == "module_instance_report"){
+                this._moduleInstanceReport.update(node);
+                if (this._moduleInstanceReport.isFinished())
                     this._subscription.terminate();
             }
         }
@@ -119,7 +122,8 @@ export class SSiPP_ModuleInstance {
             "type=\"" + this._moduleInstanceAttributes.type + "\"" +
             "driver=\"" + this._moduleInstanceAttributes.driverType + "\"" +
             ">";
-        ret += this._moduleReport.xml;
+        if (this._moduleInstanceReport != null)
+            ret += this._moduleInstanceReport.xml;
         for (let i = 0; i < this._params.length; i++)
             ret += this._params[i].xml;
         for (let i = 0; i < this._reports.length; i++)
@@ -130,6 +134,13 @@ export class SSiPP_ModuleInstance {
     }
 
     isFinished(): boolean {
-        return this._moduleReport.isFinished();
+        if (this._moduleInstanceReport == null)
+            return false;
+        return this._moduleInstanceReport.isFinished();
+    }
+
+
+    get moduleInstanceReport(): SSiPP_ModuleReport {
+        return this._moduleInstanceReport;
     }
 }

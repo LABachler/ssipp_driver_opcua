@@ -33,7 +33,6 @@ export class RedisConnector{
 
     setRedis(value: string, processId: string) {
         if (value !== this._redisString){
-            console.log("Set redis string to: " + value);
             this._redisString = value;
             this._conn.set("ssipp_" + processId, value);
         }
@@ -44,8 +43,6 @@ export class RedisConnector{
             //console.log("result[0]: " + result + " type: " + typeof result);
             //console.log("redisString: " + this._redisString + " type: " + typeof this._redisString);
             if (result != this._redisString) {
-                console.log("Redis Connector: New String from Redis: ");
-                console.log("   " + result);
                 this._redisString = result;
                 this._xmlStringChanged = true;
             }

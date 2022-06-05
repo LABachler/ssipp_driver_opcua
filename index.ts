@@ -7,7 +7,8 @@ async function main() {
         return xmlHandler.redisConnector.renewRedisString(xmlHandler.processId)
             .then(xmlHandler.renewDoc)
             .then(function (): Promise<any> {
-                xmlHandler.redisConnector.setRedis(xmlHandler.xml, xmlHandler.processId);
+                if (xmlHandler.moduleInstance.moduleInstanceReport != null)
+                    xmlHandler.redisConnector.setRedis(xmlHandler.xml, xmlHandler.processId);
                 return;
             })
             .catch(e => console.log(e))
