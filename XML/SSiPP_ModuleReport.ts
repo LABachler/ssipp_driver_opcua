@@ -18,16 +18,15 @@ export class SSiPP_ModuleReport {
     private _error: string;
     private _opcSession: ClientSession;
     private readonly _dataBlockName: string;
-    private _finished: boolean;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: string, subscription: ClientSubscription) {
-        this._finished = false;
         this._opcSession = opcSession;
         this._dataBlockName = dataBlockName;
         this.startStatusSubscription(subscription, dataBlockName);
         this.startMessageSubscription(subscription, dataBlockName);
         this.startErrorMessageSubscription(subscription, dataBlockName);
         this.startErrorSubscription(subscription, dataBlockName);
+        this.startCommandSubscription(subscription, dataBlockName)
         this.update(n);
     }
 
@@ -41,19 +40,19 @@ export class SSiPP_ModuleReport {
                 case "time_finished":
                     this._timeFinished = el.childNodes[i].textContent;
                     break;
-                case "status":
-                    this._status = +el.childNodes[i].textContent;
+                case "STATUS":
+                    this.status = +el.childNodes[i].textContent;
                     break;
-                case "command":
+                case "COMMAND":
                     this.command = +el.childNodes[i].textContent;
                     break;
-                case "message":
+                case "MESSAGE":
                     this._message = el.childNodes[i].textContent;
                     break;
-                case "error_message":
+                case "E_MSG":
                     this._errorMessage = el.childNodes[i].textContent;
                     break;
-                case "error":
+                case "ERROR":
                     this._error = el.childNodes[i].textContent;
                     break;
             }
@@ -81,6 +80,29 @@ export class SSiPP_ModuleReport {
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
             this.status = dataValue.value.value;
+        });
+    }
+    private startCommandSubscription (subscription: ClientSubscription, dataBlockName: string) {
+        const itemToMonitor: ReadValueIdOptions = {
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"",
+            attributeId: AttributeIds.Value
+        };
+
+        const parameters: MonitoringParametersOptions = {
+            samplingInterval: 100,
+            discardOldest: true,
+            queueSize: 10
+        };
+
+        const monitoredItem = ClientMonitoredItem.create(
+            subscription,
+            itemToMonitor,
+            parameters,
+            TimestampsToReturn.Both
+        );
+
+        monitoredItem.on("changed", (dataValue: DataValue) => {
+            this._command = dataValue.value.value;
         });
     }
     private startMessageSubscription(subscription: ClientSubscription, dataBlockName: string) {
@@ -173,14 +195,19 @@ export class SSiPP_ModuleReport {
         this._opcSession.write(nodeToWrite);
     }
 
+
+    get status(): number {
+        if (this._status == undefined)
+            return 1;
+        return this._status;
+    }
+
     set status(status: number) {
         this._status = status;
-        if (this._status == 2)
-            this._finished = true;
     }
 
     isFinished(): boolean {
-        if (this._status == 2 || this._status == 5)
+        if (this.status == 2 && this._command == 5)
             return true;
         return false;
     }
@@ -189,11 +216,11 @@ export class SSiPP_ModuleReport {
         return "<module_instance_report>" +
             "<time_started>" + this._timeStarted + "</time_started>" +
             "<time_finished></time_finished>" +
-            "<status>" + this._status + "</status>" +
-            "<command>" + this._command + "</command>" +
-            "<message>" + (this._message == undefined ? "" : this._message) + "</message>" +
-            "<error_message>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</error_message>" +
-            "<error>" + this._error.toString() + "</error>" +
+            "<STATUS>" + this._status + "</STATUS>" +
+            "<COMMAND>" + this._command + "</COMMAND>" +
+            "<MESSAGE>" + (this._message == undefined ? "" : this._message) + "</MESSAGE>" +
+            "<E_MSG>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</E_MSG>" +
+            "<ERROR>" + this._error.toString() + "</ERROR>" +
             "</module_instance_report>";
     }
 }

@@ -10,6 +10,10 @@ import { DataValue, MonitoringParametersOptions, ReadValueIdOptions } from "node
 
 export class SSiPP_Param {
     private readonly _name: string;
+    private readonly _plcName: string;
+    private readonly _engineeringUnit: string;
+    private readonly _minVal: string;
+    private readonly _maxVal: string;
     private _value: number;
     private _opcSession: ClientSession;
     private readonly _dataBlockName: String;
@@ -18,7 +22,11 @@ export class SSiPP_Param {
         this._opcSession = opcSession;
         this._dataBlockName = dataBlockName;
         let el: Element = <Element> n;
-        this._name = "P_" + el.attributes.getNamedItem("name").value;
+        this._name = el.attributes.getNamedItem("name").value;
+        this._plcName = el.attributes.getNamedItem("plc_name").value;
+        this._engineeringUnit = el.attributes.getNamedItem("engineering_unit").value;
+        this._minVal = el.attributes.getNamedItem("min_val").value;
+        this._maxVal = el.attributes.getNamedItem("max_val").value;
         console.log("Param value: " + el.textContent);
         this._value = parseInt(el.textContent);
         console.log("Param " + this._name + " has value " + this._value);
@@ -56,7 +64,7 @@ export class SSiPP_Param {
     }
 
     get name(): string {
-        return this._name.substring(2);
+        return this._name;
     }
 
     get value(): number {
@@ -64,7 +72,12 @@ export class SSiPP_Param {
     }
 
     get xml(): string {
-        return "<param name=\"" + this.name + "\">" +
+        return "<param name=\"" + this.name + "\"" +
+                    "engineering_unit=\"" + this._engineeringUnit + "\"" +
+                    "plc_name=\"" + this._plcName + "\"" +
+                    "min_val=\"" + this._minVal + "\"" +
+                    "max_val=\"" + this._maxVal + "\"" +
+            ">" +
             (this.value == undefined ? "" : this.value) +
             "</param>";
     }
@@ -72,14 +85,18 @@ export class SSiPP_Param {
 
 export class SSiPP_Report {
     private readonly _name: string;
+    private readonly _plcName: string;
+    private readonly _engineeringUnit: string;
     private _value: string;
 
     constructor(n: Node, opcSession: ClientSession, dataBlockName: String, subscription: ClientSubscription) {
         let el: Element = <Element> n;
-        this._name = "R_" + el.attributes.getNamedItem("name").value;
+        this._name = el.attributes.getNamedItem("name").value;
+        this._plcName = el.attributes.getNamedItem("plc_name").value;
+        this._engineeringUnit = el.attributes.getNamedItem("engineering_unit").value;
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._name + "\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._plcName + "\"",
             attributeId: AttributeIds.Value
         }
         const parameters: MonitoringParametersOptions = {
@@ -102,7 +119,7 @@ export class SSiPP_Report {
     }
 
     get name(): string {
-        return this._name.substring(2);
+        return this._name;
     }
 
     get value(): string {
@@ -112,7 +129,10 @@ export class SSiPP_Report {
     }
 
     get xml(): string {
-        return "<report name=\"" + this.name + "\">" +
+        return "<report name=\"" + this.name + "\"" +
+            "engineering_unit=\"" + this._engineeringUnit + "\"" +
+            "plc_name=\"" + this._plcName + "\"" +
+            ">" +
             this.value +
             "</report>";
     }

@@ -5,6 +5,8 @@ import * as xpath from "xpath-ts";
 
 const socket = ":4840";
 const opcUAPrefix = "opc.tcp://"
+const OPCUAUser = "diplomarbeit";
+const OPCUAPassword = "NLB2022";
 
 const connectionStrategy = {
     initialDelay: 1000,
@@ -23,7 +25,6 @@ class moduleInstanceAttributes {
     public lineId: string;
     public plc: string;
     public type: string;
-    public name: string;
     public driverType: string;
 }
 
@@ -42,15 +43,14 @@ export class SSiPP_ModuleInstance {
         let node = xpath.select("/module_instance", doc);
         console.log("Module instance constructor: " + node);
         this._opcClient = OPCUAClient.create(options);
-        let el: Element = <Element>node;
+        let el: Element = <Element>node[0];
         this._moduleInstanceAttributes = new moduleInstanceAttributes();
         this._moduleInstanceAttributes.plc = el.attributes.getNamedItem("plc").value;
         this._endpointUrl = opcUAPrefix + this._moduleInstanceAttributes.plc + socket;
         this._moduleInstanceAttributes.lineId = el.attributes.getNamedItem("line_id").value;
         this._moduleInstanceAttributes.dataBlockName = el.attributes.getNamedItem("datablock_name").value;
-        this._moduleInstanceAttributes.name = el.attributes.getNamedItem("name").value;
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
-        this._moduleInstanceAttributes.driverType = el.attributes.getNamedItem("driver_type").value;
+        this._moduleInstanceAttributes.driverType = el.attributes.getNamedItem("driver").value;
         this._element = el;
         this._params = new Array<SSiPP_Param>();
         this._reports = new Array<SSiPP_Report>();
@@ -63,7 +63,7 @@ export class SSiPP_ModuleInstance {
             } else {
                 console.log("Connected " + this._moduleInstanceAttributes + " on " + this._moduleInstanceAttributes.plc
                     + "/" + this._moduleInstanceAttributes.dataBlockName + ".");
-                this._opcSession = await this._opcClient.createSession();
+                this._opcSession = await this._opcClient.createSession(/*{userName: OPCUAUser, password: OPCUAPassword}*/);
                 this._subscription = ClientSubscription.create(this._opcSession, {
                     requestedPublishingInterval: 1000,  // subscription publishing interval
                     requestedLifetimeCount: 100,        // how often publishing interval expires without having a connection
@@ -113,12 +113,11 @@ export class SSiPP_ModuleInstance {
 
     get xml(): string {
         let ret = "<module_instance " +
-            "name=\"" + this._moduleInstanceAttributes.name + "\" " +
             "datablock_name=\"" + this._moduleInstanceAttributes.dataBlockName + "\" " +
             "line_id=\"" + this._moduleInstanceAttributes.lineId + "\" " +
             "plc=\"" + this._moduleInstanceAttributes.plc + "\" " +
             "type=\"" + this._moduleInstanceAttributes.type + "\"" +
-            "driver_type=\"" + this._moduleInstanceAttributes.driverType + "\"" +
+            "driver=\"" + this._moduleInstanceAttributes.driverType + "\"" +
             ">";
         ret += this._moduleReport.xml;
         for (let i = 0; i < this._params.length; i++)

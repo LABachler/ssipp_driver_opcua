@@ -22,7 +22,7 @@ export class XMLHandler {
 
     renewDocFromRedisString() {
         console.log("XMLHandler: renewDocFromRedisString called!");
-        this._doc = new dom().parseFromString(this._redisConnector.redisString);
+        this._doc = new dom().parseFromString(this._redisConnector.redisString.toString());
     }
 
     private processDoc() {
