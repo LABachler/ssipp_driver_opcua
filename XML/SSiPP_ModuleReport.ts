@@ -33,7 +33,6 @@ export class SSiPP_ModuleReport {
     update (n: Node) {
         let el: Element = <Element> n;
         for (let i = 0; i < el.childNodes.length; i++) {
-            console.log(el.childNodes[i].nodeName);
             switch (el.childNodes[i].nodeName) {
                 case "time_started":
                     this._timeStarted = el.childNodes[i].textContent;
@@ -62,7 +61,7 @@ export class SSiPP_ModuleReport {
 
     private startStatusSubscription (subscription: ClientSubscription, dataBlockName: string) {
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"STATUS\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"STATUS\"",
             attributeId: AttributeIds.Value
         };
 
@@ -85,7 +84,7 @@ export class SSiPP_ModuleReport {
     }
     private startCommandSubscription (subscription: ClientSubscription, dataBlockName: string) {
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"COMMAND\"",
             attributeId: AttributeIds.Value
         };
 
@@ -108,7 +107,7 @@ export class SSiPP_ModuleReport {
     }
     private startMessageSubscription(subscription: ClientSubscription, dataBlockName: string) {
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"MSG\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"MSG\"",
             attributeId: AttributeIds.Value
         };
 
@@ -131,7 +130,7 @@ export class SSiPP_ModuleReport {
     }
     private startErrorMessageSubscription(subscription: ClientSubscription, dataBlockName: string) {
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"E_MSG\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"E_MSG\"",
             attributeId: AttributeIds.Value
         };
 
@@ -154,7 +153,7 @@ export class SSiPP_ModuleReport {
     }
     private startErrorSubscription(subscription: ClientSubscription, dataBlockName: string) {
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"ERROR\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"ERROR\"",
             attributeId: AttributeIds.Value
         };
 
@@ -177,21 +176,22 @@ export class SSiPP_ModuleReport {
     }
 
     set command(command: number) {
-        console.log("set command: " + command);
         this._command = command;
         this.writeCommand();
     }
 
     private writeCommand() {
-        console.log("ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"");
+        if (this._command == 0)
+            return;
+
         const nodeToWrite = {
-            nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"PLI\".\"COMMAND\"",
-            attributeId: AttributeIds.Value,
-            indexRange: null,
+            nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"DATA_COMMUNICATION\".\"PLI\".\"COMMAND\"",
+            attributeId: opcua.AttributeIds.Value,
             value: {
+                statusCode: opcua.StatusCodes.Good,
                 value: {
-                    dataType: opcua.DataType.Int32,
-                    value: this.command
+                    dataType: opcua.DataType.Int16,
+                    value: this._command
                 }
             }
         }
@@ -220,10 +220,10 @@ export class SSiPP_ModuleReport {
             "<time_started>" + this._timeStarted + "</time_started>" +
             "<time_finished></time_finished>" +
             "<status>" + this._status + "</status>" +
-            "<command>" + this._command + "</command>" +
+            "<command>" + (this._command == undefined ? "" : this._command) + "</command>" +
             "<message>" + (this._message == undefined ? "" : this._message) + "</message>" +
             "<e_msg>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</e_msg>" +
-            "<error>" + this._error.toString() + "</error>" +
+            "<error>" + (this._error == undefined ? "" : this._error) + "</error>" +
             "</module_instance_report>";
     }
 }

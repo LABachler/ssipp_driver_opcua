@@ -27,40 +27,33 @@ export class SSiPP_Param {
         this._engineeringUnit = el.attributes.getNamedItem("engineering_unit").value;
         this._minVal = el.attributes.getNamedItem("min_val").value;
         this._maxVal = el.attributes.getNamedItem("max_val").value;
-        console.log("Param value: " + el.textContent);
-        this._value = parseInt(el.textContent);
-        console.log("Param " + this._name + " has value " + this._value);
-        const nodeToWrite = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"" + this._name + "\"",
-            attributeId: AttributeIds.Value,
-            indexRange: null,
-            value: {
-                value: {
-                    dataType: opcua.DataType.Double,
-                    value: this._value
-                }
-            }
-        }
-        opcSession.write(nodeToWrite);
+        this._value = parseFloat(el.textContent);
+        this.write(el);
     }
 
     update(n: Node) {
         let el: Element = <Element> n;
-        if (parseInt(el.textContent) != this._value) {
-            this._value = parseInt(el.textContent);
-            const nodeToWrite = {
-                nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._name + "\"",
-                attributeId: AttributeIds.Value,
-                indexRange: null,
+        if (parseFloat(el.textContent) != this._value) {
+            this.write(el);
+        }
+    }
+
+    private write(el: Element) {
+        this._value = parseFloat(el.textContent);
+        const nodeToWrite = {
+            nodeId: "ns=3;s=\"" + this._dataBlockName + "\".\"DATA_COMMUNICATION\".\"" + this._plcName + "\"",
+            attributeId: opcua.AttributeIds.Value,
+            value: {
+                statusCode: opcua.StatusCodes.Good,
                 value: {
-                    value: {
-                        dataType: opcua.DataType.Double,
-                        value: this._value
-                    }
+                    dataType: opcua.DataType.Float,
+                    value: this._value
                 }
             }
-            this._opcSession.write(nodeToWrite);
         }
+        console.log(nodeToWrite.nodeId);
+        console.log(this._value);
+        this._opcSession.write(nodeToWrite);
     }
 
     get name(): string {
@@ -72,10 +65,10 @@ export class SSiPP_Param {
     }
 
     get xml(): string {
-        return "<param name=\"" + this.name + "\"" +
-                    "engineering_unit=\"" + this._engineeringUnit + "\"" +
-                    "plc_name=\"" + this._plcName + "\"" +
-                    "min_val=\"" + this._minVal + "\"" +
+        return "<param name=\"" + this.name + "\" " +
+                    "engineering_unit=\"" + this._engineeringUnit + "\" " +
+                    "plc_name=\"" + this._plcName + "\" " +
+                    "min_val=\"" + this._minVal + "\" " +
                     "max_val=\"" + this._maxVal + "\"" +
             ">" +
             (this.value == undefined ? "" : this.value) +
@@ -96,7 +89,7 @@ export class SSiPP_Report {
         this._engineeringUnit = el.attributes.getNamedItem("engineering_unit").value;
 
         const itemToMonitor: ReadValueIdOptions = {
-            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"COMMUNICATION_DATA\".\"" + this._plcName + "\"",
+            nodeId: "ns=3;s=\"" + dataBlockName + "\".\"DATA_COMMUNICATION\".\"" + this._plcName + "\"",
             attributeId: AttributeIds.Value
         }
         const parameters: MonitoringParametersOptions = {

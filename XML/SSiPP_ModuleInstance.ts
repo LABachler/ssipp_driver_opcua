@@ -52,7 +52,6 @@ export class SSiPP_ModuleInstance {
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._moduleInstanceAttributes.driverType = el.attributes.getNamedItem("driver").value;
         this._element = <Element> node[0];
-        console.log(this._element.nodeName);
         this._params = new Array<SSiPP_Param>();
         this._reports = new Array<SSiPP_Report>();
     }
@@ -62,7 +61,7 @@ export class SSiPP_ModuleInstance {
             if (err) {
                 console.error("Cannot connect to endpoint: " + this._endpointUrl);
             } else {
-                console.log("Connected " + this._moduleInstanceAttributes + " on " + this._moduleInstanceAttributes.plc
+                console.log("Connected " + this._moduleInstanceAttributes.plc
                     + "/" + this._moduleInstanceAttributes.dataBlockName + ".");
                 this._opcSession = await this._opcClient.createSession(/*{userName: OPCUAUser, password: OPCUAPassword}*/);
                 this._subscription = ClientSubscription.create(this._opcSession, {
@@ -77,15 +76,13 @@ export class SSiPP_ModuleInstance {
                 this._subscription.on("started", function(){
                     console.log("Subscription for hugo started.");
                 }).on("keepalive", function () {
-                    console.log("Error-Subscription for hugo keepalive.");
+                    console.log("Subscription for hugo keepalive.");
                 }).on("terminated", function () {
-                    console.error("Error-Subscription for hugo terminated.");
+                    console.error("Subscription for hugo terminated.");
                 });
 
                 for (let i = 0; i < this._element.childNodes.length; i++){
-                    console.log(this._element.nodeName);
-                    let node = this._element.childNodes[0];
-                    console.log(node.nodeName);
+                    let node = this._element.childNodes[i];
                     if (node.nodeName == "param")
                         this._params.push(new SSiPP_Param(node, this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName));
@@ -119,7 +116,7 @@ export class SSiPP_ModuleInstance {
             "datablock_name=\"" + this._moduleInstanceAttributes.dataBlockName + "\" " +
             "line_id=\"" + this._moduleInstanceAttributes.lineId + "\" " +
             "plc=\"" + this._moduleInstanceAttributes.plc + "\" " +
-            "type=\"" + this._moduleInstanceAttributes.type + "\"" +
+            "type=\"" + this._moduleInstanceAttributes.type + "\" " +
             "driver=\"" + this._moduleInstanceAttributes.driverType + "\"" +
             ">";
         if (this._moduleInstanceReport != null)
