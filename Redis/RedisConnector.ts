@@ -40,8 +40,6 @@ export class RedisConnector{
 
     async renewRedisString (processId: string) {
         await this._conn.get("ssipp_" + processId).then(function (result) {
-            //console.log("result[0]: " + result + " type: " + typeof result);
-            //console.log("redisString: " + this._redisString + " type: " + typeof this._redisString);
             if (result != this._redisString) {
                 this._redisString = result;
                 this._xmlStringChanged = true;

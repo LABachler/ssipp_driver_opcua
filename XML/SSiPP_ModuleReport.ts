@@ -80,6 +80,7 @@ export class SSiPP_ModuleReport {
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
             this.status = dataValue.value.value;
+            console.log("status: " + this._status);
         });
     }
     private startCommandSubscription (subscription: ClientSubscription, dataBlockName: string) {
@@ -103,6 +104,7 @@ export class SSiPP_ModuleReport {
 
         monitoredItem.on("changed", (dataValue: DataValue) => {
             this._command = dataValue.value.value;
+            console.log("command: " + this._command);
         });
     }
     private startMessageSubscription(subscription: ClientSubscription, dataBlockName: string) {
@@ -198,7 +200,6 @@ export class SSiPP_ModuleReport {
         this._opcSession.write(nodeToWrite);
     }
 
-
     get status(): number {
         if (this._status == undefined)
             return 1;
@@ -210,16 +211,17 @@ export class SSiPP_ModuleReport {
     }
 
     isFinished(): boolean {
-        if (this.status == 2 && this._command == 5)
+        if (this._timeFinished != "") {
             return true;
+        }
         return false;
     }
 
     get xml() : string {
         return "<module_instance_report>" +
             "<time_started>" + this._timeStarted + "</time_started>" +
-            "<time_finished></time_finished>" +
-            "<status>" + this._status + "</status>" +
+            "<time_finished>" + this._timeFinished + "</time_finished>" +
+            "<status>" + (this._timeFinished == "" ? this._status : "1") + "</status>" +
             "<command>" + (this._command == undefined ? "" : this._command) + "</command>" +
             "<message>" + (this._message == undefined ? "" : this._message) + "</message>" +
             "<e_msg>" + (this._errorMessage == undefined ? "" : this._errorMessage) + "</e_msg>" +

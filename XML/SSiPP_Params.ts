@@ -51,8 +51,7 @@ export class SSiPP_Param {
                 }
             }
         }
-        console.log(nodeToWrite.nodeId);
-        console.log(this._value);
+
         this._opcSession.write(nodeToWrite);
     }
 
@@ -122,8 +121,8 @@ export class SSiPP_Report {
     }
 
     get xml(): string {
-        return "<report name=\"" + this.name + "\"" +
-            "engineering_unit=\"" + this._engineeringUnit + "\"" +
+        return "<report name=\"" + this.name + "\" " +
+            "engineering_unit=\"" + this._engineeringUnit + "\" " +
             "plc_name=\"" + this._plcName + "\"" +
             ">" +
             this.value +

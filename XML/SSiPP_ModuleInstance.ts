@@ -26,6 +26,7 @@ class moduleInstanceAttributes {
     public plc: string;
     public type: string;
     public driverType: string;
+    public id: string;
 }
 
 export class SSiPP_ModuleInstance {
@@ -38,10 +39,10 @@ export class SSiPP_ModuleInstance {
     private readonly _endpointUrl: string;
     private _element: Element;
     private _subscription: ClientSubscription;
+    private _updateAllowed: boolean;
 
     constructor(doc: XMLDocument) {
         let node = xpath.select("/module_instance", doc);
-        console.log("Module instance constructor: " + node);
         this._opcClient = OPCUAClient.create(options);
         let el: Element = <Element>node[0];
         this._moduleInstanceAttributes = new moduleInstanceAttributes();
@@ -51,9 +52,11 @@ export class SSiPP_ModuleInstance {
         this._moduleInstanceAttributes.dataBlockName = el.attributes.getNamedItem("datablock_name").value;
         this._moduleInstanceAttributes.type = el.attributes.getNamedItem("type").value;
         this._moduleInstanceAttributes.driverType = el.attributes.getNamedItem("driver").value;
+        this._moduleInstanceAttributes.id = el.attributes.getNamedItem("id").value;
         this._element = <Element> node[0];
         this._params = new Array<SSiPP_Param>();
         this._reports = new Array<SSiPP_Report>();
+        this._updateAllowed = false;
     }
 
     setup = async (): Promise<any> => {
@@ -81,8 +84,12 @@ export class SSiPP_ModuleInstance {
                     console.error("Subscription for hugo terminated.");
                 });
 
-                for (let i = 0; i < this._element.childNodes.length; i++){
-                    let node = this._element.childNodes[i];
+                let moduleInstance = this._element;
+                if (moduleInstance.nodeName != "module_instance")
+                    moduleInstance = moduleInstance.childNodes.item(1);
+
+                for (let i = 0; i < moduleInstance.childNodes.length; i++){
+                    let node = moduleInstance.childNodes.item(i);
                     if (node.nodeName == "param")
                         this._params.push(new SSiPP_Param(node, this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName));
@@ -93,14 +100,23 @@ export class SSiPP_ModuleInstance {
                         this._moduleInstanceReport = new SSiPP_ModuleReport(this._element.childNodes[i], this._opcSession,
                             this._moduleInstanceAttributes.dataBlockName, this._subscription);
                 }
+                this._updateAllowed = true;
             }
         }.bind(this));
     }
 
     update(node: Node) {
+        if (!this._updateAllowed)
+            return;
+
         this._element = <Element> node;
-        for (let i = 0, paramsCounter = 0; i < this._element.childNodes.length; i++){
-            let node = this._element.childNodes[i];
+
+        let moduleInstance = this._element;
+        if (moduleInstance.nodeName == undefined || moduleInstance.nodeName != "module_instance")
+            moduleInstance = <Element>moduleInstance.childNodes.item(1);
+
+        for (let i = 0, paramsCounter = 0; i < moduleInstance.childNodes.length; i++){
+            let node = moduleInstance.childNodes.item(i);
             if (node.nodeName == "param")
                 this._params[paramsCounter++].update(node);
             else if (node.nodeName == "module_instance_report"){
@@ -117,7 +133,8 @@ export class SSiPP_ModuleInstance {
             "line_id=\"" + this._moduleInstanceAttributes.lineId + "\" " +
             "plc=\"" + this._moduleInstanceAttributes.plc + "\" " +
             "type=\"" + this._moduleInstanceAttributes.type + "\" " +
-            "driver=\"" + this._moduleInstanceAttributes.driverType + "\"" +
+            "driver=\"" + this._moduleInstanceAttributes.driverType + "\" " +
+            "id=\"" + this._moduleInstanceAttributes.id + "\"" +
             ">";
         if (this._moduleInstanceReport != null)
             ret += this._moduleInstanceReport.xml;
