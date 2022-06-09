@@ -112,8 +112,12 @@ export class SSiPP_ModuleInstance {
         this._element = <Element> node;
 
         let moduleInstance = this._element;
-        if (moduleInstance.nodeName == undefined || moduleInstance.nodeName != "module_instance")
-            moduleInstance = <Element>moduleInstance.childNodes.item(1);
+        if (moduleInstance.nodeName == undefined || moduleInstance.nodeName != "module_instance") {
+            if (moduleInstance.childNodes.item(0).nodeName == "module_instance")
+                moduleInstance = <Element>moduleInstance.childNodes.item(0);
+            else if (moduleInstance.childNodes.item(1).nodeName == "module_instance")
+                moduleInstance = <Element>moduleInstance.childNodes.item(1);
+        }
 
         for (let i = 0, paramsCounter = 0; i < moduleInstance.childNodes.length; i++){
             let node = moduleInstance.childNodes.item(i);
